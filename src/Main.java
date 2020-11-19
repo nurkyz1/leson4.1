@@ -1,14 +1,15 @@
 import java.util.Random;
 
 public class Main {
-    public static int bossHealth = 900;
+    public static int bossHealth = 2000;
     public static int bossDamage = 50;
+    public static boolean isBossSleep = false;
     public static String bossDefenceType = "";
-    public static int[] heroesHealth = {260, 280, 250, 300};
-    public static int[] heroesDamage = {20, 25, 15, 0};
+    public static int[] heroesHealth = {260, 280, 250, 300, 500, 320, 350, 400};
+    public static int[] heroesDamage = {20, 25, 15, 0, 5, 10, 30, 35};
     public static String[] heroesAttackType = {"Physical",
-            "Magical", "Kinetic", "Medic"};
-    
+            "Magical", "Kinetic", "Medic", "Golem", "Lucky", "Berserk", " Thor"};
+
 
     public static void main(String[] args) {
         System.out.println("Game started:");
@@ -16,7 +17,6 @@ public class Main {
         while (!isGameFinished()) {
             round();
         }
-        healAHeroes();
     }
 
     public static void round() {
@@ -25,17 +25,57 @@ public class Main {
             bossHits();
         }
         heroesHit();
+        healAHeroes();
+        golem();
+        lucky();
+        berserk();
+        thor();
+        printStatistics();
+    }
 
+    public static void thor() {
+        if (heroesHealth[7] > 0) {
+            Random random = new Random();
+            boolean sleep = random.nextBoolean();
+            isBossSleep = sleep;
+        }
+    }
+
+    public static void berserk() {
+        if (heroesHealth[6] > 0) {
+            heroesHealth[6] += bossDamage / 2;
+            bossHealth -= heroesDamage[6] + (bossDamage / 2);
+        }
+    }
+
+
+    public static void lucky() {
+        Random ran = new Random();
+        boolean lacky = ran.nextBoolean();
+        if (lacky) heroesHealth[5] += bossDamage;
+        System.out.println(heroesAttackType[5] + " " + lacky);
 
     }
 
-    public static void healAHeroes (){
-        for (int i = 0; i <heroesHealth.length ; i++) {
+    private static void golem() {
+        for (int i = 0; i < heroesHealth.length; i++) {
+            if (heroesHealth[i] > 0) {
+                if (i == 4) continue;
+                heroesHealth[i] += bossDamage / 5;
+                heroesHealth[4] -= bossDamage / 4;
+                System.out.println(heroesAttackType[i] + " golem " + heroesHealth[i]);
+            }
+        }
+    }
+
+    public static void healAHeroes() {
+        for (int i = 0; i < heroesHealth.length; i++) {
             Random ran = new Random();
             int heal = ran.nextInt(50);
-                if (heroesHealth[i]<100 && heroesHealth[i]>0 ) {
-                    heroesHealth[i]+=heal;
-                }
+            if (heroesHealth[i] < 100 && heroesHealth[i] > 0) {
+                heroesHealth[i] += heal;
+                System.out.println(heroesAttackType[i] + " heal " + heroesHealth[i]);
+            }
         }
     }
 
@@ -47,22 +87,28 @@ public class Main {
     }
 
     public static void bossHits() {
-        for (int i = 0; i < heroesHealth.length; i++) {
-            if (heroesHealth[i] > 0) {
-                if (heroesHealth[i] - bossDamage < 0) {
-                    heroesHealth[i] = 0;
-                } else {
-                    heroesHealth[i] = heroesHealth[i] - bossDamage;
+        if (isBossSleep) {
+            System.out.println("boss sleep");
+            isBossSleep = false;
+        } else {
+            for (int i = 0; i < heroesHealth.length; i++) {
+                if (heroesHealth[i] > 0) {
+                    if (heroesHealth[i] - bossDamage < 0) {
+                        heroesHealth[i] = 0;
+                    } else {
+                        heroesHealth[i] = heroesHealth[i] - bossDamage;
+                    }
                 }
             }
         }
     }
 
     public static void heroesHit() {
+
         for (int i = 0; i < heroesDamage.length; i++) {
 
-
             if (bossHealth > 0 && heroesHealth[i] > 0) {
+
                 if (bossDefenceType == heroesAttackType[i]) {
                     if (bossHealth - heroesDamage[i] < 0) {
                         bossHealth = 0;
